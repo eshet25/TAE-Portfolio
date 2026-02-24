@@ -390,7 +390,8 @@ that shows who paid.</p>
   ) +
   theme_bw()</code></pre>
 <p><img src="p01_files/figure-html/visualize-payer-nonpayer-1.png" alt="" width="672" /></p>
-<p>###Conversion Rates</p>
+<div id="conversion-rates" class="section level3">
+<h3>Conversion Rates</h3>
 <p>Now that I have differentiated who is paying, I would like to take a
 look at the conversion rate (percent of users who pay) in both
 groups.</p>
@@ -423,7 +424,9 @@ groups.</p>
 doesn’t really tell us the full story. We only know that slightly more
 people paid in group ‘a’ But we would also want to know how much these
 paying users are spending.</p>
-<p>###Average Revenue Per User (ARPU)</p>
+</div>
+<div id="average-revenue-per-user-arpu" class="section level3">
+<h3>Average Revenue Per User (ARPU)</h3>
 <p>I will calculate the average revenue spent per user (total revenue in
 group/total number of users in group).We are now incorporating th
 conversion rates with their level of spending.</p>
@@ -456,6 +459,7 @@ are making purchases in Group B, those who do may be spending more on
 average compared to Group A. It’s important to note that the outliers
 may be affecting our data though since our revenue distribution is
 really skewed.</p>
+</div>
 <div id="revenue-distribution-by-group" class="section level3">
 <h3>Revenue Distribution by Group</h3>
 <pre class="r"><code>ggplot(ab, aes(x = revenue, fill = testgroup)) +
@@ -470,6 +474,91 @@ facet_wrap(~testgroup) +
   theme(legend.position = &quot;none&quot;)</code></pre>
 <pre><code>## `stat_bin()` using `bins = 30`. Pick better value `binwidth`.</code></pre>
 <p><img src="p01_files/figure-html/revenue-histogram-by-group-1.png" alt="" width="672" /></p>
+<p>Let’s look at the spending patterns in the two groups, among those
+who paid.</p>
+<pre class="r"><code>ab %&gt;%
+  filter(revenue &gt; 0) %&gt;%
+  ggplot(aes(x = revenue, fill = testgroup)) +
+  geom_histogram() +
+  facet_wrap(~testgroup) +
+  labs(
+    title = &quot;Revenue Distribution Among Paying Users&quot;,
+    x = &quot;Revenue ($)&quot;,
+    y = &quot;Number of Paying Users&quot;
+  ) +
+  theme_bw() +
+  theme(legend.position = &quot;none&quot;)</code></pre>
+<pre><code>## `stat_bin()` using `bins = 30`. Pick better value `binwidth`.</code></pre>
+<p><img src="p01_files/figure-html/histogram-among-payers-only-1.png" alt="" width="672" /></p>
+</div>
+<div id="hypothesis-testing-for-conversion-rates"
+class="section level3">
+<h3>Hypothesis Testing for Conversion Rates</h3>
+<p>Now that we have seen some of the comparison metrics, let us test if
+the difference between the two groups is significant. We will use
+proportion testing since we are comparing proportions.</p>
+<pre class="r"><code>conv_table &lt;- ab %&gt;%
+  group_by(testgroup) %&gt;%
+  summarise(
+    payers = sum(payer_user), #how many users paid
+    total = n() #how many uusers in each group
+  )</code></pre>
+<pre class="r"><code>prop_result &lt;- prop.test(x = conv_table$payers, n = conv_table$total)
+prop_result</code></pre>
+<pre><code>## 
+##  2-sample test for equality of proportions with continuity correction
+## 
+## data:  conv_table$payers out of conv_table$total
+## X-squared = 4.3747, df = 1, p-value = 0.03648
+## alternative hypothesis: two.sided
+## 95 percent confidence interval:
+##  3.952707e-05 1.227383e-03
+## sample estimates:
+##      prop 1      prop 2 
+## 0.009539690 0.008906235</code></pre>
+<p>From the analysis, we can see that a to sample test for equality of
+proportions shows that the conversion rate for Group A (~0.95%) was
+significantly higher than in group B (~0.89%), χ²(1) = 4.37, p = .036.
+However, the magnitude of the effect is still very small (only about
+0.06% difference).</p>
+</div>
+<div id="hypothesis-testing-for-arpu" class="section level3">
+<h3>Hypothesis Testing for ARPU</h3>
+<pre class="r"><code>arpu_test &lt;- t.test(revenue ~ testgroup, data = ab)
+
+arpu_test</code></pre>
+<pre><code>## 
+##  Welch Two Sample t-test
+## 
+## data:  revenue by testgroup
+## t = -0.62349, df = 240991, p-value = 0.533
+## alternative hypothesis: true difference in means between group a and group b is not equal to 0
+## 95 percent confidence interval:
+##  -5.542295  2.867161
+## sample estimates:
+## mean in group a mean in group b 
+##        25.41372        26.75129</code></pre>
+<p>We can see that a Welch two-sample t-test indicates that the
+difference in average revenue per user between group A (M = 25.41) and
+group B (M = 26.75) was not statistically significant, t(240,991) =
+-0.62, p = .533. Eventhough group B exhibited a slightly higher mean
+revenue, the difference was small relative to overall variability in
+spending.</p>
+</div>
+<div id="conclusion" class="section level3">
+<h3>Conclusion</h3>
+<p>The Kaggle challenge was to decide which offer set performs best by
+determining the appropriate metrics for a robust evaluation.</p>
+<p>Here, we tested two promotional offer designs across approximately
+400,000 users. Group A resulted in a slighlty higher percentage of
+paying users (0.95% vs 0.89%). While the difference was statistically
+significant (perhaps due to the large size), the absolute difference
+between the two groups was only 0.06%.In terms of revenue generated per
+user, Group B generated slightly higher averga revenue ($26.75 vs
+$25.41), but this difference wasn’t found to be statistically
+significant. Overall, I would argue that there is no strong evidence
+that either offer meaningfully outperforms the other in revenue
+impact.</p>
 </div>
 
 

@@ -179,3 +179,56 @@ facet_wrap(~testgroup) +
   theme(legend.position = "none")
 ```
 
+Let's look at the spending patterns in the two groups, among those who paid. 
+
+```{r  histogram-among-payers-only}
+ab %>%
+  filter(revenue > 0) %>%
+  ggplot(aes(x = revenue, fill = testgroup)) +
+  geom_histogram() +
+  facet_wrap(~testgroup) +
+  labs(
+    title = "Revenue Distribution Among Paying Users",
+    x = "Revenue ($)",
+    y = "Number of Paying Users"
+  ) +
+  theme_bw() +
+  theme(legend.position = "none")
+```
+
+### Hypothesis Testing for Conversion Rates
+
+Now that we have seen some of the comparison metrics, let us test if the difference between the two groups is significant. We will use proportion testing since we are comparing proportions.
+
+```{r create-conversion-table-for-testing}
+conv_table <- ab %>%
+  group_by(testgroup) %>%
+  summarise(
+    payers = sum(payer_user), #how many users paid
+    total = n() #how many uusers in each group
+  )
+```
+
+```{r prop-test-conversion}
+prop_result <- prop.test(x = conv_table$payers, n = conv_table$total)
+prop_result
+```
+
+From the analysis, we can see that a sample test for equality of proportions shows that the conversion rate for Group A (~0.95%) was significantly higher than in group B (~0.89%), χ²(`r prop_result$parameter`) = `r round(prop_result$statistic, 2)`, 
+p = `r sub("0\\.", ".", round(prop_result$p.value, 3))`.  However, the magnitude of the effect is still very small (only about 0.06% difference).
+
+### Hypothesis Testing for ARPU
+
+```{r t-test-for-ARPU}
+arpu_test <- t.test(revenue ~ testgroup, data = ab)
+
+arpu_test
+```
+
+We can see that a Welch two-sample t-test indicates that the difference in average revenue per user between group A (M = 25.41) and group B (M = 26.75) was not statistically significant, t(240,991) = -0.62, p = .533. Eventhough group B exhibited a slightly higher mean revenue, the difference was small relative to overall variability in spending. 
+
+### Conclusion 
+
+The Kaggle challenge was to decide which offer set performs best by determining the appropriate metrics for a robust evaluation.
+
+Here, we tested two promotional offer designs across approximately 400,000 users. Group A resulted in a slighlty higher percentage of paying users (0.95% vs 0.89%). While the difference was statistically significant (perhaps due to the large size), the absolute difference between the two groups was only 0.06%. In terms of revenue generated per user, Group B generated slightly higher average revenue ($26.75 vs $25.41), but this difference wasn't found to be statistically significant. Overall, I would argue that there is no strong evidence that either offer meaningfully outperforms the other in revenue impact.
