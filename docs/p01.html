@@ -296,75 +296,76 @@ $(document).ready(function () {
 
 
 <blockquote>
-<p>The projects should be numbered consecutively (i.e., in the order in
-which you began them), and should include for each project a description
-of the goal, the product (computer program, hand graph, computer graph,
-etc.), the data, and some interpretation. Reports must be reproducible
-and of high quality in terms of writing, grammar, presentation, etc.</p>
+<p>Goal: For the first portfolio, the goal is to use some of the tools
+we have learned in earlier modules and more to clean, summarize, and
+visualize a Gamelytics dataset from Kaggle. I will also try to evaluate
+whether a new promotional offer(the test group) improves user (player)
+outcomes compared to the current offer (control group) using A/B tsting
+foor the conversion rate and revenue per use, as suggested as part of
+the Kaggle challenges for this dataset. For the purpose of this
+protfolio, we are going to assume the revenue is in dollars as there is
+no indication of currency in the description.</p>
 </blockquote>
+<p>#Will start by loading all the packages I may be using for this.</p>
 <pre class="r"><code>library(tidyverse) 
 library(tidyr)
-data(fish_encounters)</code></pre>
-<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum
-eget nibh vel est aliquet iaculis at placerat sem. Aenean faucibus
-iaculis ultricies. Nullam consequat odio in ultricies ullamcorper. Etiam
-venenatis in est vitae ullamcorper. Nam vitae urna ut dolor rhoncus
-aliquet at vel neque. Quisque tristique leo finibus nisi interdum, sit
-amet tempor risus viverra. Donec mollis vulputate sodales. Nunc ornare,
-leo quis euismod eleifend, eros mi maximus felis, vel varius lacus dui
-eget nibh. Duis vitae nunc nisl. Donec accumsan aliquam elit, eu
-fringilla quam pulvinar eget.</p>
-<p>Mauris in ligula mauris. Curabitur facilisis pharetra metus eget
-lobortis. In egestas nibh sit amet faucibus eleifend. Suspendisse
-imperdiet viverra blandit. Phasellus consectetur tincidunt eros eu
-facilisis. Quisque maximus, orci eget sodales aliquam, velit lorem
-semper dolor, nec convallis erat ipsum mattis velit. Pellentesque
-porttitor, mauris vitae aliquam mattis, metus nisl viverra turpis, vel
-convallis metus sapien et ex. Nunc consequat ipsum id dolor eleifend,
-sit amet semper eros sodales. Pellentesque consectetur, dui quis
-venenatis malesuada, nunc lorem lacinia libero, vitae malesuada dui arcu
-in augue. Aliquam id sagittis libero. Vestibulum aliquet sagittis
-libero, non posuere odio molestie ut. Curabitur lacus enim, viverra vel
-odio non, pretium efficitur elit. Mauris posuere efficitur interdum.
-Nunc sed bibendum turpis, quis fringilla velit. Phasellus eu lorem
-lobortis eros molestie laoreet.</p>
-<pre class="r"><code># Create a barplot of the number of fish encounters by species
-ggplot(data = fish_encounters, aes(x = station, y = seen)) +
-  geom_bar(stat = &quot;identity&quot;) +
-  labs(x = &quot;Species&quot;, y = &quot;Number of Fish Encounters&quot;)</code></pre>
-<p><img src="p01_files/figure-html/unnamed-chunk-1-1.png" alt="" width="672" /></p>
-<p>Sed mollis purus faucibus leo finibus, ut pharetra nibh elementum.
-Nulla id orci lorem. Mauris sollicitudin mi eget tellus vehicula, ut
-convallis lorem mollis. In blandit nulla diam, a malesuada sem volutpat
-interdum. Ut elementum elit at velit maximus, ac tempor odio porttitor.
-Suspendisse lobortis sollicitudin tortor, ut pharetra libero luctus a.
-Sed hendrerit faucibus metus. Sed rutrum purus vel pellentesque
-euismod.</p>
-<pre class="r"><code># Create a barplot of the number of fish encounters by species
-ggplot(data = fish_encounters, aes(x = station, y = seen)) +
-  geom_bar(stat = &quot;identity&quot;) +
-  labs(x = &quot;Species&quot;, y = &quot;Number of Fish Encounters&quot;)</code></pre>
-<p><img src="p01_files/figure-html/unnamed-chunk-2-1.png" alt="" width="672" /></p>
-<p>Mauris placerat in velit a pharetra. Nulla viverra bibendum lectus,
-ut lobortis nibh. Aenean malesuada, orci vitae dictum placerat, enim
-justo aliquet leo, ac tincidunt augue ipsum et mi. Nullam in pharetra
-metus, nec molestie felis. Duis varius rhoncus pulvinar. Integer semper
-urna sed tellus rhoncus, vel suscipit odio iaculis. Mauris iaculis neque
-pellentesque ex convallis venenatis. Sed ultrices euismod fermentum. Ut
-feugiat risus at turpis tincidunt viverra.</p>
-<pre class="r"><code># Create a barplot of the number of fish encounters by species
-ggplot(data = fish_encounters, aes(x = station, y = seen)) +
-  geom_bar(stat = &quot;identity&quot;) +
-  labs(x = &quot;Species&quot;, y = &quot;Number of Fish Encounters&quot;)</code></pre>
-<p><img src="p01_files/figure-html/unnamed-chunk-3-1.png" alt="" width="672" /></p>
-<p>Donec sagittis suscipit orci in ultrices. Vivamus iaculis eleifend
-est et dictum. Fusce non urna at lacus dapibus tincidunt ac sed nibh.
-Donec luctus lectus elit, ac ultrices tortor mollis sit amet. Nulla
-finibus lacinia arcu. Proin sollicitudin non odio et pulvinar. Maecenas
-finibus faucibus finibus. Ut elementum metus velit, a sodales sapien
-commodo et. Vivamus pulvinar, sapien et porta cursus, elit est luctus
-nisi, eget fringilla odio diam et enim. Sed sodales suscipit bibendum.
-Morbi ut metus semper, laoreet felis sodales, consequat dolor.</p>
+library(ggplot2)</code></pre>
+<p>#Import a/b test data (csv, separated by semicolon; used delim)</p>
+<pre class="r"><code>library(readr)
+ab_test &lt;- read_delim(&quot;C:/Users/psy_user/Downloads/Data science/ab_test.csv&quot;, 
+    delim = &quot;;&quot;, escape_double = FALSE, trim_ws = TRUE)</code></pre>
+<pre><code>## Rows: 404770 Columns: 3
+## ── Column specification ────────────────────────────────────────────────────────
+## Delimiter: &quot;;&quot;
+## chr (1): testgroup
+## dbl (2): user_id, revenue
+## 
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<pre class="r"><code>View(ab_test)</code></pre>
+<p>#Do a quick check/poke around the dataset.</p>
+<pre class="r"><code>names(ab_test)  #checking if the file is read correctly</code></pre>
+<pre><code>## [1] &quot;user_id&quot;   &quot;revenue&quot;   &quot;testgroup&quot;</code></pre>
+<pre class="r"><code>glimpse(ab_test)</code></pre>
+<pre><code>## Rows: 404,770
+## Columns: 3
+## $ user_id   &lt;dbl&gt; 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 1…
+## $ revenue   &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+## $ testgroup &lt;chr&gt; &quot;b&quot;, &quot;a&quot;, &quot;a&quot;, &quot;b&quot;, &quot;b&quot;, &quot;b&quot;, &quot;b&quot;, &quot;b&quot;, &quot;b&quot;, &quot;a&quot;, &quot;a&quot;, &quot;a&quot;, …</code></pre>
+<p>Here is some quick guide to what each column is measuring:</p>
+<p>user_id: A unique identifier for each user</p>
+<p>revenue: The revenue generated by the user</p>
+<p>testgroup: The group to which the user was assigned (object, e.g.,
+“a” or “b”)</p>
+<p>Quick check into the revenue data we have</p>
+<pre class="r"><code>summary(ab_test$revenue)</code></pre>
+<pre><code>##     Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+##     0.00     0.00     0.00    26.08     0.00 37433.00</code></pre>
+<p>It looks like the data is very spread out. Let’s visualize this.</p>
+<pre class="r"><code>ggplot(ab_test, aes(x = revenue)) + 
+  geom_histogram() +
+  labs (
+    title = &quot;Distribution of Gamelytics Revenue&quot;,
+    x = &quot;Revenue Generated by User ($)&quot;,
+    y = &quot;Number of Users&quot;
+  ) +
+  theme_bw()</code></pre>
+<pre><code>## `stat_bin()` using `bins = 30`. Pick better value `binwidth`.</code></pre>
+<p><img src="p01_files/figure-html/revenue-histogram-1.png" alt="" width="672" /></p>
+<p>The data is heavily right-skewed. A lot of people did not pay
+anything at all, while there is a very small number of people paying
+about less than $10,000. We have also seen that the maximum amount spent
+is a little over $30,000.</p>
+<p>Next, I wanted to do a quick check into the test groups.</p>
+<pre class="r"><code>ab_test %&gt;% count(testgroup)</code></pre>
+<pre><code>## # A tibble: 2 × 2
+##   testgroup      n
+##   &lt;chr&gt;      &lt;int&gt;
+## 1 a         202103
+## 2 b         202667</code></pre>
+<p>Looks like the number of people in the two groups are pretty
+balanced, and we have a very large sample size for both groups.</p>
+<p>```</p>
 
 
 
