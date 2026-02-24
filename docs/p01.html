@@ -301,11 +301,11 @@ Analytics Challenge</h1>
 we have learned in earlier modules and more to clean, summarize, and
 visualize a Gamelytics dataset from Kaggle. I will also try to evaluate
 whether a new promotional offer(the test group) improves user (player)
-outcomes compared to the current offer (control group) using A/B tsting
-foor the conversion rate and revenue per use, as suggested as part of
-the Kaggle challenges for this dataset. For the purpose of this
-protfolio, we are going to assume the revenue is in dollars as there is
-no indication of currency in the description.</p>
+outcomes compared to the current offer (control group) using A/B testing
+for the conversion rate and revenue per use, as suggested as part of the
+Kaggle challenges for this dataset. For the purpose of this protfolio,
+we are going to assume the revenue is in dollars as there is no
+indication of currency in the description.</p>
 </blockquote>
 <p>#Will start by loading all the packages I may be using for this.</p>
 <pre class="r"><code>library(tidyverse) 
@@ -366,10 +366,10 @@ is a little under $40,000.</p>
 ## 2 b         202667</code></pre>
 <p>Looks like the number of people in the two groups are pretty
 balanced, and we have a very large sample size for both groups.</p>
-<p>Because there are few people that have spent money, it’s not very
-helpful to visualize if they’re mixed together with the majority of the
-population which are non-payers. So, I am creating a new variable that
-shows who paid.</p>
+<p>Because there are only few people that have spent money, it’s not
+very helpful to visualize if they’re mixed together with the majority of
+the population which are non-payers. So, I am creating a new variable
+that shows who paid.</p>
 <pre class="r"><code>ab &lt;- ab_test %&gt;%
   mutate (payer_user = revenue &gt; 0)</code></pre>
 <pre class="r"><code>ab %&gt;% count (payer_user)</code></pre>
@@ -383,13 +383,94 @@ shows who paid.</p>
   ggplot(aes(x = payer_user, y = n, fill = payer_user)) + 
   geom_col() +
   labs (
-    title = &quot;Gamelytics Paying vs Non-Paying Users&quot;,
+    title = &quot;Gamelytics: Paying vs Non-Paying Users&quot;,
     x = &quot;Is the user paying?&quot;,
     y = &quot;Number of Users&quot;,
     fill = &quot;User is payer&quot;
   ) +
   theme_bw()</code></pre>
 <p><img src="p01_files/figure-html/visualize-payer-nonpayer-1.png" alt="" width="672" /></p>
+<p>###Conversion Rates</p>
+<p>Now that I have differentiated who is paying, I would like to take a
+look at the conversion rate (percent of users who pay) in both
+groups.</p>
+<pre class="r"><code>conv_rate_by_group &lt;- ab %&gt;%
+  group_by(testgroup) %&gt;%   #split the data into group a and b
+  summarise(
+    conversion_rate = mean(payer_user),  #what proportion paid in each group  
+    n_users = n(),   #how many users in each group
+    .groups = &quot;drop&quot;
+  )</code></pre>
+<p>We can see that there are 0.95% of paying users in test group ‘a’ and
+0.89% paying users in test group ‘b’.</p>
+<pre class="r"><code>ggplot (conv_rate_by_group,
+        aes(x = testgroup,
+            y = conversion_rate, 
+            fill = testgroup)) + 
+  geom_col() +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 0.01)) +
+  scale_fill_manual(values = c(&quot;a&quot; = &quot;orange&quot;,
+                               &quot;b&quot; = &quot;steelblue&quot;)) +
+  labs (
+    title = &quot;Conversion Rate by Test Group&quot;,
+    x = &quot;Test Group&quot;,
+    y = &quot;Conversion Rate (%)&quot;,
+    fill = &quot;Group&quot;
+  ) +
+  theme_bw()</code></pre>
+<p><img src="p01_files/figure-html/visualize-conversion-rate-1.png" alt="" width="672" /></p>
+<p>Now that we know what percentage of users paid in each group, this
+doesn’t really tell us the full story. We only know that slightly more
+people paid in group ‘a’ But we would also want to know how much these
+paying users are spending.</p>
+<p>###Average Revenue Per User (ARPU)</p>
+<p>I will calculate the average revenue spent per user (total revenue in
+group/total number of users in group).We are now incorporating th
+conversion rates with their level of spending.</p>
+<pre class="r"><code>ARPU_by_group &lt;- ab %&gt;% 
+  group_by(testgroup) %&gt;%
+  summarise(
+    ARPU = mean(revenue),   #calculate the mean of revenue now (instead of paying user)
+    n_users = n ()
+  )</code></pre>
+<pre class="r"><code>ggplot(ARPU_by_group,
+       aes(x = testgroup,
+           y = ARPU, 
+           fill = testgroup)) + 
+  geom_col() + 
+  scale_fill_manual(values = c(&quot;a&quot; = &quot;firebrick&quot;,
+                               &quot;b&quot; = &quot;forestgreen&quot;)) +
+  labs (
+    title = &quot;Average Revenue Per User by Test Group&quot;,
+    x = &quot;Test Group&quot;,
+    y = &quot;ARPU ($)&quot;,
+    fill = &quot;Group&quot;
+  ) +
+  theme_bw()</code></pre>
+<p><img src="p01_files/figure-html/visualize_ARPU-1.png" alt="" width="672" /></p>
+<p>This is a bit interesting. Earlier the conversion rate calculation
+showed us that Group A has slightly more number of users that are
+paying. But, now we see that in Group B, there is slightly more money
+spent per user overall. This suggests that although slightly fewer users
+are making purchases in Group B, those who do may be spending more on
+average compared to Group A. It’s important to note that the outliers
+may be affecting our data though since our revenue distribution is
+really skewed.</p>
+<div id="revenue-distribution-by-group" class="section level3">
+<h3>Revenue Distribution by Group</h3>
+<pre class="r"><code>ggplot(ab, aes(x = revenue, fill = testgroup)) +
+  geom_histogram() +
+facet_wrap(~testgroup) +
+  labs(
+    title = &quot;Revenue Distribution by Test Group&quot;,
+    x = &quot;Revenue ($)&quot;,
+    y = &quot;Number of Users&quot;
+  ) +
+  theme_bw() +
+  theme(legend.position = &quot;none&quot;)</code></pre>
+<pre><code>## `stat_bin()` using `bins = 30`. Pick better value `binwidth`.</code></pre>
+<p><img src="p01_files/figure-html/revenue-histogram-by-group-1.png" alt="" width="672" /></p>
+</div>
 
 
 

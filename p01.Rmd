@@ -94,6 +94,8 @@ ab %>%
   theme_bw()
 ```
 
+### Conversion Rates
+
 Now that I have differentiated who is paying, I would like to take a look at the conversion rate (percent of users who pay) in both groups. 
 
 ```{r conversion-rate-by-group}
@@ -127,4 +129,53 @@ ggplot (conv_rate_by_group,
 
 ```
 
+Now that we know what percentage of users paid in each group, this doesn't really tell us the full story. We only know that slightly more people paid in group 'a' But we would also want to know how much these paying users are spending. 
+
+### Average Revenue Per User (ARPU)
+
+I will calculate the average revenue spent per user (total revenue in group/total number of users in group).We are now incorporating th conversion rates with their level of spending. 
+
+```{r calculate-ARPU-by-group}
+ARPU_by_group <- ab %>% 
+  group_by(testgroup) %>%
+  summarise(
+    ARPU = mean(revenue),   #calculate the mean of revenue now (instead of paying user)
+    n_users = n ()
+  )
+```
+
+```{r visualize_ARPU}
+ggplot(ARPU_by_group,
+       aes(x = testgroup,
+           y = ARPU, 
+           fill = testgroup)) + 
+  geom_col() + 
+  scale_fill_manual(values = c("a" = "firebrick",
+                               "b" = "forestgreen")) +
+  labs (
+    title = "Average Revenue Per User by Test Group",
+    x = "Test Group",
+    y = "ARPU ($)",
+    fill = "Group"
+  ) +
+  theme_bw()
+  
+```
+
+This is a bit interesting. Earlier the conversion rate calculation showed us that Group A has slightly more number of users that are paying. But, now we see that in Group B, there is slightly more money spent per user overall. This suggests that although slightly fewer users are making purchases in Group B, those who do may be spending more on average compared to Group A. It's important to note that the outliers may be affecting our data though since our revenue distribution is really skewed. 
+
+### Revenue Distribution by Group
+
+```{r revenue-histogram-by-group}
+ggplot(ab, aes(x = revenue, fill = testgroup)) +
+  geom_histogram() +
+facet_wrap(~testgroup) +
+  labs(
+    title = "Revenue Distribution by Test Group",
+    x = "Revenue ($)",
+    y = "Number of Users"
+  ) +
+  theme_bw() +
+  theme(legend.position = "none")
+```
 
