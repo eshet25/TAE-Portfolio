@@ -1,10 +1,9 @@
 ---
-title: "Portfolio 1"
+title: "Portfolio 1: Gamelytics: Mobile Game Analytics Challenge"
 ---
 
 > Goal:
-For the first portfolio, the goal is to use some of the tools we have learned in earlier modules and more to clean, summarize, and visualize a Gamelytics dataset from Kaggle. I will also try to evaluate whether a new promotional offer(the test group) improves user (player) outcomes compared to the current offer (control group) using A/B tsting foor the conversion rate and revenue per use, as suggested as part of the Kaggle challenges for this dataset. For the purpose of this protfolio, we are going to assume the revenue is in dollars as there is no indication of currency in the description. 
-
+For the first portfolio, the goal is to use some of the tools we have learned in earlier modules and more to clean, summarize, and visualize a Gamelytics dataset from Kaggle. I will also try to evaluate whether a new promotional offer(the test group) improves user (player) outcomes compared to the current offer (control group) using A/B testing for the conversion rate and revenue per use, as suggested as part of the Kaggle challenges for this dataset. For the purpose of this protfolio, we are going to assume the revenue is in dollars as there is no indication of currency in the description. 
 
 
 #Will start by loading all the packages I may be using for this. 
@@ -70,7 +69,7 @@ ab_test %>% count(testgroup)
 
 Looks like the number of people in the two groups are pretty balanced, and we have a very large sample size for both groups. 
 
-Because there are few people that have spent money, it's not very helpful to visualize if they're mixed together with the majority of the population which are non-payers. So, I am creating a new variable that shows who paid. 
+Because there are only few people that have spent money, it's not very helpful to visualize if they're mixed together with the majority of the population which are non-payers. So, I am creating a new variable that shows who paid. 
 
 ```{r add-payer-variable}
 ab <- ab_test %>%
@@ -87,7 +86,7 @@ ab %>%
   ggplot(aes(x = payer_user, y = n, fill = payer_user)) + 
   geom_col() +
   labs (
-    title = "Gamelytics Paying vs Non-Paying Users",
+    title = "Gamelytics: Paying vs Non-Paying Users",
     x = "Is the user paying?",
     y = "Number of Users",
     fill = "User is payer"
@@ -95,6 +94,37 @@ ab %>%
   theme_bw()
 ```
 
+Now that I have differentiated who is paying, I would like to take a look at the conversion rate (percent of users who pay) in both groups. 
 
+```{r conversion-rate-by-group}
+conv_rate_by_group <- ab %>%
+  group_by(testgroup) %>%   #split the data into group a and b
+  summarise(
+    conversion_rate = mean(payer_user),  #what proportion paid in each group  
+    n_users = n(),   #how many users in each group
+    .groups = "drop"
+  )
+```
+
+We can see that there are `r scales::percent(mean(ab$payer_user[ab$testgroup == "a"]), accuracy = 0.01)` of paying users in test group 'a' and `r scales::percent(mean(ab$payer_user[ab$testgroup == "b"]), accuracy = 0.01)` paying users in test group 'b'.
+
+```{r visualize-conversion-rate}
+ggplot (conv_rate_by_group,
+        aes(x = testgroup,
+            y = conversion_rate, 
+            fill = testgroup)) + 
+  geom_col() +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 0.01)) +
+  scale_fill_manual(values = c("a" = "orange",
+                               "b" = "steelblue")) +
+  labs (
+    title = "Conversion Rate by Test Group",
+    x = "Test Group",
+    y = "Conversion Rate (%)",
+    fill = "Group"
+  ) +
+  theme_bw()
+
+```
 
 
